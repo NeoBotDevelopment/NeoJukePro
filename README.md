@@ -9,7 +9,7 @@ We rebuilt it from scratch to make it simpler, clearer, more functional, and mor
 
 ## Operation requirements
 
-- [x] Java 16 or later execution environment.
+- [x] Java 17 or later execution environment.
 - [x] NeoBotCore v0.1.1 or later
 
 ## If you find a problem with the program
