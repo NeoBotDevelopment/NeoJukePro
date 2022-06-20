@@ -35,7 +35,7 @@ public class SeekCommand extends CommandExecutor {
     public void onInvoke(CommandContext context) {
         if (NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getAudioPlayer().getPlayingTrack() != null)
             NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getAudioPlayer().seekTo(
-                    MessageUtil.parseTimeToMillis((String) context.getOptions().get("ToTime").getValue())
+                    MessageUtil.parseTimeToMillis((String) context.getOptions().get("to-time").getValue())
             );
     }
 
