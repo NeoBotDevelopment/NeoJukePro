@@ -19,7 +19,7 @@ package page.nafuchoco.neojukepro.module;
 import page.nafuchoco.neobot.api.ConfigLoader;
 import page.nafuchoco.neobot.api.NeoBot;
 import page.nafuchoco.neobot.api.datastore.DataStore;
-import page.nafuchoco.neobot.api.datastore.DataStoreGenerateException;
+import page.nafuchoco.neobot.api.datastore.exception.DataStoreGenerateException;
 import page.nafuchoco.neobot.api.module.NeoModule;
 import page.nafuchoco.neojukepro.core.MessageManager;
 import page.nafuchoco.neojukepro.core.NeoJukeConfig;
