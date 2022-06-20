@@ -67,7 +67,7 @@ dependencies {
 
     // ClientLib
     compileOnly 'com.github.NeoBotDevelopment:NeoBotApi:master-SNAPSHOT'
-    implementation 'com.squareup.okhttp3:okhttp:4.9.3'
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     api 'com.github.walkyst:lavaplayer-fork:1.3.97'
 
     // Parser
