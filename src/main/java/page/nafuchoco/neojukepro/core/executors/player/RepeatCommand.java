@@ -17,29 +17,36 @@
 package page.nafuchoco.neojukepro.core.executors.player;
 
 import lombok.extern.slf4j.Slf4j;
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
+import page.nafuchoco.neobot.api.command.CommandValueOption;
 import page.nafuchoco.neojukepro.core.guild.NeoGuildPlayerOptions;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 @Slf4j
 public class RepeatCommand extends CommandExecutor {
 
-    public RepeatCommand(String name, String... aliases) {
-        super(name, aliases);
+    public RepeatCommand(String name) {
+        super(name);
+
+        getOptions().add(new CommandValueOption(OptionType.STRING,
+                "repeat",
+                "Select NONE/SINGLE/ALL.",
+                true,
+                false));
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        if (context.getArgs().length != 0) {
-            NeoGuildPlayerOptions.RepeatMode repeatMode;
-            try {
-                repeatMode = NeoGuildPlayerOptions.RepeatMode.valueOf(context.getArgs()[0].toUpperCase());
-            } catch (IllegalArgumentException e) {
-                repeatMode = NeoGuildPlayerOptions.RepeatMode.NONE;
-            }
-            context.getNeoGuild().getSettings().setRepeatMode(repeatMode);
-            context.getChannel().sendMessage("Repeat mode has been changed.").queue();
+        NeoGuildPlayerOptions.RepeatMode repeatMode;
+        try {
+            repeatMode = NeoGuildPlayerOptions.RepeatMode.valueOf(((String) context.getOptions().get("repeat").getValue()).toUpperCase());
+        } catch (IllegalArgumentException e) {
+            repeatMode = NeoGuildPlayerOptions.RepeatMode.NONE;
         }
+        NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getSettings().setRepeatMode(repeatMode);
+        context.getResponseSender().sendMessage("Repeat mode has been changed.").queue();
     }
 
     @Override
@@ -47,16 +54,5 @@ public class RepeatCommand extends CommandExecutor {
         return "Repeat the track.";
     }
 
-    @Override
-    public String getHelp() {
-        return getName() + "[option]\n----\n" +
-                "[NONE]: Do not repeat.\n" +
-                "[SINGLE]: Repeat one song.\n" +
-                "[ALL]: Repeat all.";
-    }
 
-    @Override
-    public int getRequiredPerm() {
-        return 0;
-    }
 }

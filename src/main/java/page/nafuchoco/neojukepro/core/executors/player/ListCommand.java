@@ -16,40 +16,47 @@
 
 package page.nafuchoco.neojukepro.core.executors.player;
 
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
+import page.nafuchoco.neobot.api.command.CommandValueOption;
 import page.nafuchoco.neojukepro.core.MessageManager;
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
 import page.nafuchoco.neojukepro.core.player.LoadedTrackContext;
 import page.nafuchoco.neojukepro.core.player.NeoGuildPlayer;
 import page.nafuchoco.neojukepro.core.utils.MessageUtil;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 import java.util.List;
 
 public class ListCommand extends CommandExecutor {
 
-    public ListCommand(String name, String... aliases) {
-        super(name, aliases);
+    public ListCommand(String name) {
+        super(name);
+
+        getOptions().add(new CommandValueOption(OptionType.INTEGER,
+                "page",
+                "Switches the page to be displayed.",
+                false,
+                false));
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        NeoGuildPlayer audioPlayer = context.getNeoGuild().getAudioPlayer();
+        NeoGuildPlayer audioPlayer = NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getAudioPlayer();
         List<LoadedTrackContext> tracks = audioPlayer.getTrackProvider().getQueues();
         if (!tracks.isEmpty()) {
             StringBuilder sb = new StringBuilder();
             int range = 15;
             int page = 1;
 
-            if (context.getArgs().length != 0) {
+            if (context.getOptions().size() != 0) {
                 try {
-                    page = Integer.parseInt(context.getArgs()[0]);
+                    page = (Integer) context.getOptions().get("page").getValue();
                     if (page < 1) {
                         page = 1;
                     }
                 } catch (NumberFormatException e) {
-                    context.getChannel().sendMessage(MessageManager.getMessage(
-                            context.getNeoGuild().getSettings().getLang(),
-                            "command.page.specify")).queue();
+                    context.getChannel().sendMessage(MessageManager.getMessage("command.page.specify")).queue();
                 }
             }
 
@@ -57,12 +64,8 @@ public class ListCommand extends CommandExecutor {
             if (tracks.size() % range >= 1)
                 listPage++;
 
-            if (page > listPage) {
-                context.getChannel().sendMessage(MessageManager.getMessage(
-                        context.getNeoGuild().getSettings().getLang(),
-                        "command.page.large")).queue();
-                return;
-            }
+            if (page > listPage)
+                context.getResponseSender().sendMessage(MessageManager.getMessage("command.page.large")).queue();
 
             long totalTime = 0;
             for (LoadedTrackContext track : tracks)
@@ -70,32 +73,23 @@ public class ListCommand extends CommandExecutor {
 
             if (audioPlayer.getPlayingTrack() != null)
                 sb.append(MessageUtil.format(
-                        MessageManager.getMessage(
-                                context.getNeoGuild().getSettings().getLang(),
-                                "command.list.playing"),
+                        MessageManager.getMessage("command.list.playing"),
                         audioPlayer.getPlayingTrack().getTrack().getInfo().title) + "\n");
-            sb.append(MessageUtil.format(MessageManager.getMessage(
-                            context.getNeoGuild().getSettings().getLang(),
-                            "command.list.list"),
+            sb.append(MessageUtil.format(MessageManager.getMessage("command.list.list"),
                     tracks.size(), page, listPage, MessageUtil.formatTime(totalTime)));
             for (int count = range * page - range + 1; count <= range * page; count++) {
                 if (tracks.size() >= count && sb.length() < 1800) {
                     LoadedTrackContext track = tracks.get(count - 1);
                     sb.append("\n`[" + count + "]` **" + track.getTrack().getInfo().title
-                            + " (" + track.getInvoker().getJDAMember().getEffectiveName() + ")** `[" + MessageUtil.formatTime(track.getTrack().getDuration() - track.getStartPosition()) + "]`");
+                            + " (" + track.getInvoker().getEffectiveName() + ")** `[" + MessageUtil.formatTime(track.getTrack().getDuration() - track.getStartPosition()) + "]`");
                 }
             }
-            context.getChannel().sendMessage(sb.toString()).queue();
+            context.getResponseSender().sendMessage(sb.toString()).setEphemeral(false).queue();
         } else if (audioPlayer.getPlayingTrack() != null) {
-            context.getChannel().sendMessage(
-                    MessageUtil.format(MessageManager.getMessage(
-                                    context.getNeoGuild().getSettings().getLang(),
-                                    "command.list.playing"),
-                            audioPlayer.getPlayingTrack().getTrack().getInfo().title)).queue();
+            context.getResponseSender().sendMessage(MessageUtil.format(MessageManager.getMessage("command.list.playing"),
+                    audioPlayer.getPlayingTrack().getTrack().getInfo().title)).queue();
         } else {
-            context.getChannel().sendMessage(MessageManager.getMessage(
-                    context.getNeoGuild().getSettings().getLang(),
-                    "command.list.nothing")).queue();
+            context.getResponseSender().sendMessage(MessageManager.getMessage("command.list.nothing")).queue();
         }
     }
 
@@ -104,14 +98,5 @@ public class ListCommand extends CommandExecutor {
         return "Displays the list of queues registered in the Bot.";
     }
 
-    @Override
-    public String getHelp() {
-        return getName() + " <args>\n----\n" +
-                "<PageNumber>: Switches the page to be displayed.\n";
-    }
 
-    @Override
-    public int getRequiredPerm() {
-        return 0;
-    }
 }

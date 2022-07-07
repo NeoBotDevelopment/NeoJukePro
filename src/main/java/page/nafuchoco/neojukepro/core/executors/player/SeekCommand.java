@@ -16,22 +16,27 @@
 
 package page.nafuchoco.neojukepro.core.executors.player;
 
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
+import page.nafuchoco.neobot.api.command.CommandValueOption;
 import page.nafuchoco.neojukepro.core.utils.MessageUtil;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 public class SeekCommand extends CommandExecutor {
 
-    public SeekCommand(String name, String... aliases) {
-        super(name, aliases);
+    public SeekCommand(String name) {
+        super(name);
+
+        getOptions().add(new CommandValueOption(OptionType.STRING, "to-time", "Seek the currently playing track.", true, false));
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        if (context.getArgs().length != 0
-                && context.getNeoGuild().getAudioPlayer().getPlayingTrack() != null) {
-            context.getNeoGuild().getAudioPlayer().seekTo(MessageUtil.parseTimeToMillis(context.getArgs()[0]));
-        }
+        if (NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getAudioPlayer().getPlayingTrack() != null)
+            NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild()).getAudioPlayer().seekTo(
+                    MessageUtil.parseTimeToMillis((String) context.getOptions().get("to-time").getValue())
+            );
     }
 
     @Override
@@ -39,14 +44,5 @@ public class SeekCommand extends CommandExecutor {
         return "Seek the currently playing track.";
     }
 
-    @Override
-    public String getHelp() {
-        return getName() + "[<ToTime>]\n----\n" +
-                "[<ToTime>]: Seek the currently playing track.";
-    }
 
-    @Override
-    public int getRequiredPerm() {
-        return 0;
-    }
 }

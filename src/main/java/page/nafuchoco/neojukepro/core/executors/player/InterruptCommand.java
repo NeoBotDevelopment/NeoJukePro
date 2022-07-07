@@ -16,65 +16,62 @@
 
 package page.nafuchoco.neojukepro.core.executors.player;
 
-import net.dv8tion.jda.api.Permission;
+import lombok.val;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.entities.VoiceChannel;
-import org.apache.commons.lang3.math.NumberUtils;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
+import page.nafuchoco.neobot.api.command.CommandValueOption;
 import page.nafuchoco.neojukepro.core.MessageManager;
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
 import page.nafuchoco.neojukepro.core.player.AudioTrackLoader;
 import page.nafuchoco.neojukepro.core.player.NeoGuildPlayer;
 import page.nafuchoco.neojukepro.core.player.TrackContext;
 import page.nafuchoco.neojukepro.core.utils.ChannelPermissionUtil;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 public class InterruptCommand extends CommandExecutor {
 
-    public InterruptCommand(String name, String... aliases) {
-        super(name, aliases);
+    public InterruptCommand(String name) {
+        super(name);
+
+        getOptions().add(new CommandValueOption(OptionType.STRING,
+                "url",
+                "URL of track to play",
+                true,
+                false));
+        getOptions().add(new CommandValueOption(OptionType.INTEGER,
+                "index",
+                "Index to interrupt",
+                true,
+                false));
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        NeoGuildPlayer audioPlayer = context.getNeoGuild().getAudioPlayer();
-        if (context.getArgs().length >= 2) {
-            if (!context.getNeoGuild().getJDAGuild().getSelfMember().getVoiceState().inAudioChannel()
-                    && context.getInvoker().getJDAMember().getVoiceState().getChannel().getType() != ChannelType.VOICE) {
-                VoiceChannel targetChannel = (VoiceChannel) context.getInvoker().getJDAMember().getVoiceState().getChannel();
-                if (targetChannel == null) {
-                    context.getChannel().sendMessage(MessageManager.getMessage(
-                            context.getNeoGuild().getSettings().getLang(),
-                            "command.join.before")).queue();
-                    return;
-                }
-                if (!ChannelPermissionUtil.checkAccessVoiceChannel(targetChannel, context.getNeoGuild().getJDAGuild().getSelfMember())) {
-                    context.getChannel().sendMessage(
-                            MessageManager.getMessage(
-                                    context.getNeoGuild().getSettings().getLang(),
-                                    "command.channel.permission")).queue();
-                    return;
-                }
-                audioPlayer.joinChannel(targetChannel);
+        var neoGuild = NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild());
+        neoGuild.setLastJoinedChannel(context.getChannel());
+        
+        NeoGuildPlayer audioPlayer = neoGuild.getAudioPlayer();
+        if (!neoGuild.getJDAGuild().getSelfMember().getVoiceState().inAudioChannel()
+                && context.getInvoker().getVoiceState().getChannel().getType() != ChannelType.VOICE) {
+            VoiceChannel targetChannel = (VoiceChannel) context.getInvoker().getVoiceState().getChannel();
+            if (targetChannel == null) {
+                context.getResponseSender().sendMessage(MessageManager.getMessage("command.join.before")).queue();
             }
-            audioPlayer.play(new AudioTrackLoader(
-                    new TrackContext(context.getNeoGuild(), context.getInvoker(), NumberUtils.toInt(context.getArgs()[0], 0), context.getArgs()[1])));
-            if (context.getNeoGuild().getJDAGuild().getSelfMember().hasPermission(Permission.MESSAGE_MANAGE))
-                context.getMessage().delete().submit();
+            if (!ChannelPermissionUtil.checkAccessVoiceChannel(targetChannel, context.getGuild().getSelfMember())) {
+                context.getResponseSender().sendMessage(MessageManager.getMessage("command.channel.permission")).queue();
+            }
+            audioPlayer.joinChannel(targetChannel);
         }
+        val url = (String) context.getOptions().get("url").getValue();
+        val index = (Integer) context.getOptions().get("index").getValue();
+        audioPlayer.play(new AudioTrackLoader(
+                new TrackContext(neoGuild, context.getInvoker(), index, url)));
     }
 
     @Override
     public String getDescription() {
         return "Interrupts the track into the queue.";
-    }
-
-    @Override
-    public String getHelp() {
-        return null;
-    }
-
-    @Override
-    public int getRequiredPerm() {
-        return 0;
     }
 }

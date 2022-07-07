@@ -1,20 +1,16 @@
 # NeoJukePro
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/nafu-at/NeoJukePro)
-![GitHub](https://img.shields.io/github/license/nafu-at/NeoJukePro)
-[![Java CI with Gradle](https://github.com/nafu-at/NeoJukePro/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/nafu-at/NeoJukePro/actions/workflows/gradle.yml)
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/35ee3810e0b647de90d3251fad96bcc4)](https://www.codacy.com/gh/nafu-at/NeoJukePro/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=nafu-at/NeoJukePro&amp;utm_campaign=Badge_Grade)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/NeoBotDevelopment/NeoJukePro)
+![GitHub](https://img.shields.io/github/license/NeoBotDevelopment/NeoJukePro)
+[![Java CI with Gradle](https://github.com/NeoBotDevelopment/NeoJukePro/actions/workflows/gradle.yml/badge.svg?branch=master)](https://github.com/NeoBotDevelopment/NeoJukePro/actions/workflows/gradle.yml)
 
 NeoJukePro is a new Discord Music Bot developed as a successor to SimpleJuke.  
 We rebuilt it from scratch to make it simpler, clearer, more functional, and more stable.
 
 ## Operation requirements
 
-- [x] Windows, MacOS, Linux, and other common PC operating systems.
-- [x] Java11 or later execution environment.
-- [x] MariaDB 5.5 or later or MySQL 5.5 or later.
-- [x] Discord account.
-    + [x] Server Members Intent must be enabled except in bypass mode.
+- [x] Java 17 or later execution environment.
+- [x] NeoBotCore v0.1.1 or later
 
 ## If you find a problem with the program
 
@@ -47,7 +43,6 @@ The original source code of this program is released under the Apache License 2.
 ### MIT License
 
 - SLF4J api
-- Lavalink-Client
 
 ### The 3-Clause BSD License
 

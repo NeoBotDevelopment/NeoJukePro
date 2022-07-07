@@ -17,53 +17,48 @@
 package page.nafuchoco.neojukepro.core.executors.player;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.math.NumberUtils;
+import net.dv8tion.jda.api.interactions.commands.OptionType;
+import org.jetbrains.annotations.NotNull;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
+import page.nafuchoco.neobot.api.command.CommandValueOption;
+import page.nafuchoco.neobot.api.command.SubCommandOption;
 import page.nafuchoco.neojukepro.core.MessageManager;
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
 import page.nafuchoco.neojukepro.core.utils.MessageUtil;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 @Slf4j
 public class VolumeCommand extends CommandExecutor {
 
-    public VolumeCommand(String name, String... aliases) {
-        super(name, aliases);
+    public VolumeCommand(String name) {
+        super(name);
+
+        getOptions().add(new CommandValueOption(OptionType.INTEGER,
+                "volume",
+                "Change to that volume.",
+                false,
+                false));
+        //getOptions().add(new VolumeConfirmSubCommand("confirm"));
+        // TODO: 2022/03/12 Confirmをなにか考える
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        if (context.getArgs().length != 0) {
+        var neoGuild = NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild());
+        if (!context.getOptions().isEmpty()) {
             int volume = -1;
-            if (context.getArgs()[0].equals("confirm")
-                    && context.getNeoGuild().getGuildTempRegistry().getTemp("volumevalue") != null) {
-                volume = (int) context.getNeoGuild().getGuildTempRegistry().getTemp("volumevalue");
-                context.getNeoGuild().getGuildTempRegistry().deleteTemp("volumevalue");
-            } else {
-                try {
-                    volume = NumberUtils.toInt(context.getArgs()[0], -1);
-                    if (volume > 200) {
-                        context.getChannel().sendMessage(
-                                MessageManager.getMessage(
-                                        context.getNeoGuild().getSettings().getLang(),
-                                        "command.volume.warn"
-                                )
-                        ).queue();
-                        context.getNeoGuild().getGuildTempRegistry().registerTemp("volumevalue", volume);
-                        volume = -1;
-                    }
-                } catch (NumberFormatException e) {
-                    context.getChannel().sendMessage(MessageManager.getMessage(
-                            context.getNeoGuild().getSettings().getLang(),
-                            "command.volume.correct")).queue();
-                }
+            volume = (int) context.getOptions().get("volume").getValue();
+            if (volume > 200) {
+                neoGuild.getGuildTempRegistry().registerTemp("volumevalue", volume);
+                context.getResponseSender().sendMessage(MessageManager.getMessage("command.volume.warn")).queue();
             }
 
             if (volume >= 0)
-                context.getNeoGuild().getSettings().setVolumeLevel(volume);
+                neoGuild.getSettings().setVolumeLevel(volume);
         }
-        context.getChannel().sendMessage(MessageUtil.format(
-                MessageManager.getMessage(context.getNeoGuild().getSettings().getLang(), "command.volume.corrent"),
-                context.getNeoGuild().getSettings().getPlayerOptions().getVolumeLevel())).queue();
+        context.getHook().sendMessage(MessageUtil.format(
+                MessageManager.getMessage("command.volume.corrent"),
+                neoGuild.getSettings().getPlayerOptions().getVolumeLevel())).queue();
     }
 
     @Override
@@ -71,14 +66,33 @@ public class VolumeCommand extends CommandExecutor {
         return "Changes the player's volume.";
     }
 
-    @Override
-    public String getHelp() {
-        return getName() + " <args>\n----\n" +
-                "<0-200>: Change to that volume.";
-    }
 
-    @Override
-    public int getRequiredPerm() {
-        return 0;
+    public static class VolumeConfirmSubCommand extends SubCommandOption {
+
+        public VolumeConfirmSubCommand(String name) {
+            super(name);
+        }
+
+        @Override
+        public void onInvoke(CommandContext context) {
+            var neoGuild = NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild());
+            int volume = -1;
+            if (neoGuild.getGuildTempRegistry().getTemp("volumevalue") != null) {
+                volume = (int) neoGuild.getGuildTempRegistry().getTemp("volumevalue");
+                neoGuild.getGuildTempRegistry().deleteTemp("volumevalue");
+            }
+
+            if (volume >= 0)
+                neoGuild.getSettings().setVolumeLevel(volume);
+
+            context.getResponseSender().sendMessage(MessageUtil.format(
+                    MessageManager.getMessage("command.volume.corrent"),
+                    neoGuild.getSettings().getPlayerOptions().getVolumeLevel())).queue();
+        }
+
+        @Override
+        public @NotNull String getDescription() {
+            return "Confirmed change to high volume";
+        }
     }
 }

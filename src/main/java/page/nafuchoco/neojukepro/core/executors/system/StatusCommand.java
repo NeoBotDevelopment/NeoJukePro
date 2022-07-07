@@ -17,25 +17,25 @@
 package page.nafuchoco.neojukepro.core.executors.system;
 
 import lombok.val;
+import page.nafuchoco.neobot.api.command.CommandContext;
+import page.nafuchoco.neobot.api.command.CommandExecutor;
 import page.nafuchoco.neojukepro.core.MessageManager;
-import page.nafuchoco.neojukepro.core.command.CommandContext;
-import page.nafuchoco.neojukepro.core.command.CommandExecutor;
 import page.nafuchoco.neojukepro.core.guild.NeoGuildPlayerOptions;
 import page.nafuchoco.neojukepro.core.player.NeoGuildPlayer;
+import page.nafuchoco.neojukepro.module.NeoJuke;
 
 public class StatusCommand extends CommandExecutor {
 
-    public StatusCommand(String name, String... aliases) {
-        super(name, aliases);
+    public StatusCommand(String name) {
+        super(name);
     }
 
     @Override
     public void onInvoke(CommandContext context) {
-        NeoGuildPlayerOptions playerOptions = context.getNeoGuild().getSettings().getPlayerOptions();
-        NeoGuildPlayer audioPlayer = context.getNeoGuild().getAudioPlayer();
-        val builder = new StringBuilder(MessageManager.getMessage(
-                context.getNeoGuild().getSettings().getLang(),
-                "command.status") + "\n```");
+        var neoGuild = NeoJuke.getInstance().getGuildRegistry().getNeoGuild(context.getGuild());
+        NeoGuildPlayerOptions playerOptions = neoGuild.getSettings().getPlayerOptions();
+        NeoGuildPlayer audioPlayer = neoGuild.getAudioPlayer();
+        val builder = new StringBuilder(MessageManager.getMessage("command.status") + "\n```");
         if (audioPlayer.getPlayingTrack() != null)
             builder.append("Playing Track: ").append(audioPlayer.getPlayingTrack().getTrack().getInfo().title).append("\n");
         builder.append("Registered Queues: ").append(audioPlayer.getTrackProvider().getQueues().size()).append("\n");
@@ -44,7 +44,8 @@ public class StatusCommand extends CommandExecutor {
         builder.append("Shuffle: ").append(playerOptions.isShuffle()).append("\n");
         builder.append("Repeat Mode: ").append(playerOptions.getRepeatMode()).append("\n");
         builder.append("```");
-        context.getChannel().sendMessage(builder.toString()).queue();
+
+        context.getResponseSender().sendMessage(builder.toString()).queue();
     }
 
     @Override
@@ -52,13 +53,5 @@ public class StatusCommand extends CommandExecutor {
         return "Displays the current state of the player.";
     }
 
-    @Override
-    public String getHelp() {
-        return null;
-    }
 
-    @Override
-    public int getRequiredPerm() {
-        return 0;
-    }
 }
