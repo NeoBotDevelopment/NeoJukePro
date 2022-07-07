@@ -60,7 +60,7 @@ public class NeoGuild {
         guildTempRegistry = new NeoGuildTempRegistry();
         audioPlayerManager = new DefaultAudioPlayerManager();
 
-        audioPlayerManager.registerSourceManager(new YoutubeAudioSourceManager(true));
+        audioPlayerManager.registerSourceManager(new YoutubeAudioSourceManager());
         audioPlayerManager.registerSourceManager(SoundCloudAudioSourceManager.createDefault());
         audioPlayerManager.registerSourceManager(new BandcampAudioSourceManager());
         audioPlayerManager.registerSourceManager(new VimeoAudioSourceManager());
